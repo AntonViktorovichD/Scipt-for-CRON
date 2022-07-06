@@ -41,12 +41,19 @@ function reports($periodicity, $dbh) {
                if ($department == $reports['user_dep']) {
                   preg_match('#(\d+)\-(\d+)\-(\d+)#', $reports['created_at'], $create_date);
                   if (strtotime($create_date[1] . '-' . $create_date[2] . '-' . $create_date[3]) < strtotime($target_date)) {
-                     //
+                     $table_name = $period['report_table'];
+                     $report_table_name = $reports['table_name'];
+                     $table_uuid = $period['table_uuid'];
+                     $row_uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+                     $user_id = $reports['user_id'];
+                     $user_dep = $reports['user_dep'];
+                     $created_at = date('Y-m-d, H:i:s');
+                     //$dbh->exec("insert into `$table_name` (table_name, table_uuid, row_uuid, user_id, user_dep, created_at) values ('$report_table_name', '$table_uuid', '$row_uuid', '$user_id', '$user_dep', '$created_at')");
                   }
                }
             }
          } else {
-            $period['table_uuid'];
+//            $period['table_uuid'];
          }
       }
    }
