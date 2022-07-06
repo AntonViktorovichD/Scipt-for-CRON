@@ -32,15 +32,17 @@ foreach ($data as $key => $table) {
 
 function reports($periodicity, $dbh) {
    date_default_timezone_set('Europe/Moscow');
-   $target_date = date('Y-m-d, H:i:s');
+   $target_date = date('Y-m-d');
    foreach ($periodicity as $period) {
       $periodicity_report = $dbh->query("SELECT * FROM " . $period['report_table'] . "")->fetchAll();
       foreach ($periodicity_report as $reports) {
          if ($reports['table_uuid'] == $period['table_uuid']) {
-            foreach(json_decode($period['departments']) as $department) {
-               if($department == $reports['user_dep']) {
-                  var_dump($reports);
-
+            foreach (json_decode($period['departments']) as $department) {
+               if ($department == $reports['user_dep']) {
+                  preg_match('#(\d+)\-(\d+)\-(\d+)#', $reports['created_at'], $create_date);
+                  if (strtotime($create_date[1] . '-' . $create_date[2] . '-' . $create_date[3]) < strtotime($target_date)) {
+                     //
+                  }
                }
             }
          } else {
