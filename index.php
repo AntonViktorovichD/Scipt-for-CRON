@@ -33,24 +33,40 @@ foreach ($data as $key => $table) {
 function reports($periodicity, $dbh) {
    date_default_timezone_set('Europe/Moscow');
    $target_date = date('Y-m-d');
+   $clear_reports = [];
+   $counter = 0;
    foreach ($periodicity as $period) {
       $uuid = $period['table_uuid'];
       foreach (json_decode($period['departments'], true) as $department) {
          try {
             $reports = $dbh->query("SELECT * FROM " . $period['report_table'] . " WHERE user_dep = '$department' AND created_at > '$target_date' AND table_uuid = '$uuid'")->fetchAll();
             if (empty($reports)) {
-               $table_name = $period['report_table'];
-               $report_table_name = $period['table_name'];
-               $table_uuid = $period['table_uuid'];
-               $row_uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
-               $user_id = $period['user_id'];
-               $created_at = date('Y-m-d, H:i:s');
-               $dbh->exec("insert into `$table_name` (table_name, table_uuid, row_uuid, user_id, user_dep, created_at) values ('$report_table_name', '$table_uuid', '$row_uuid', '$user_id', '$department', '$created_at')");
+               $counter++;
+               $clear_reports[$counter]['report_table'] = $period['report_table'];
+               $clear_reports[$counter]['table_name'] = $period['table_name'];
+               $clear_reports[$counter]['table_uuid'] = $period['table_uuid'];
+               $clear_reports[$counter]['row_uuid'] = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+               $clear_reports[$counter]['$department'] = $department;
+               $users = $dbh->query("SELECT * FROM users WHERE department = '$department'")->fetchAll();
+               foreach ($users as $user) {
+                  $clear_reports[$counter]['user_id'] = $user['id'];
+                  $clear_reports[$counter]['created_at'] = date('Y-m-d, H:i:s');
+               }
             }
          } catch (Exception $e) {
             echo 'Выброшено исключение: ', $e->getMessage(), "\n";
          }
       }
+   }
+   foreach ($clear_reports as $clear_report) {
+      $table_name = $clear_report['report_table'];
+      $report_table_name = $clear_report['table_name'];
+      $table_uuid = $clear_report['table_uuid'];
+      $row_uuid = $clear_report['row_uuid'];
+      $user_id = $clear_report['user_id'];
+      $department = $clear_report['$department'];
+      $created_at = $clear_report['created_at'];
+      $dbh->exec("insert into `$table_name` (table_name, table_uuid, row_uuid, user_id, user_dep, created_at) values ('$report_table_name', '$table_uuid', '$row_uuid', '$user_id', '$department', '$created_at')");
    }
 }
 
