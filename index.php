@@ -35,9 +35,14 @@ function reports($periodicity, $dbh) {
    $target_date = date('Y-m-d');
    $isset_reports = [];
    $reports = [];
-   foreach ($periodicity as $period) {
+     foreach ($periodicity as $period) {
+      $uuid = $period['table_uuid'];
       foreach (json_decode($period['departments'], true) as $department) {
-         $reports = $dbh->query("SELECT * FROM " . $period['report_table'] . " WHERE user_dep = '$department' AND created_at > '$target_date' AND table_uuid = `{$period['table_uuid']}`")->fetchAll();
+         try {
+            $reports = $dbh->query("SELECT * FROM " . $period['report_table'] . " WHERE user_dep = '$department' AND created_at > '$target_date' AND table_uuid = '$uuid'")->fetchAll();
+         } catch (Exception $e) {
+            var_dump($e->getMessage());
+         }
          var_dump($reports);
       }
    }
