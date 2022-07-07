@@ -39,10 +39,16 @@ function reports($periodicity, $dbh) {
          try {
             $reports = $dbh->query("SELECT * FROM " . $period['report_table'] . " WHERE user_dep = '$department' AND created_at > '$target_date' AND table_uuid = '$uuid'")->fetchAll();
             if (empty($reports)) {
-               var_dump($reports);
+               $table_name = $period['report_table'];
+               $report_table_name = $period['table_name'];
+               $table_uuid = $period['table_uuid'];
+               $row_uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+               $user_id = $period['user_id'];
+               $created_at = date('Y-m-d, H:i:s');
+               $dbh->exec("insert into `$table_name` (table_name, table_uuid, row_uuid, user_id, user_dep, created_at) values ('$report_table_name', '$table_uuid', '$row_uuid', '$user_id', '$department', '$created_at')");
             }
          } catch (Exception $e) {
-            echo 'Выброшено исключение: ',  $e->getMessage(), "\n";
+            echo 'Выброшено исключение: ', $e->getMessage(), "\n";
          }
       }
    }
