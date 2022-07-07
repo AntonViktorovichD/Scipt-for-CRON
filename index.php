@@ -33,21 +33,19 @@ foreach ($data as $key => $table) {
 function reports($periodicity, $dbh) {
    date_default_timezone_set('Europe/Moscow');
    $target_date = date('Y-m-d');
-   $isset_reports = [];
-   $reports = [];
-     foreach ($periodicity as $period) {
+   foreach ($periodicity as $period) {
       $uuid = $period['table_uuid'];
       foreach (json_decode($period['departments'], true) as $department) {
          try {
             $reports = $dbh->query("SELECT * FROM " . $period['report_table'] . " WHERE user_dep = '$department' AND created_at > '$target_date' AND table_uuid = '$uuid'")->fetchAll();
+            if (empty($reports)) {
+               var_dump($reports);
+            }
          } catch (Exception $e) {
-            var_dump($e->getMessage());
+            echo 'Выброшено исключение: ',  $e->getMessage(), "\n";
          }
-         var_dump($reports);
       }
    }
-   $count = 0;
-
 }
 
 reports($daily, $dbh);
